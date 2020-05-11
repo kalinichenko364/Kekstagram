@@ -45,26 +45,26 @@ var createComments = function () {
 
 // Создать объект картинок
 var usersData = function () {
-  var userArr = [];
+  var usersArr = [];
 
   for (let i = 0; i < TOTAL_OBJECTS; i++) {
-    userArr.push({
+    usersArr.push({
       url: 'photos/' + (i + 1) + '.jpg',
       description: 'Описание фотографии',
       likes: getRandomNumber(15, 200),
       comments: createComments()
     })
   }
-  return userArr;
+  return usersArr;
 }
 
 // Создать один элемент китинки с описанием из шаблона разметки
 var renderImage = function (user) {
-var imageElement = similarImageTemplate.cloneNode(true);
+  var imageElement = similarImageTemplate.cloneNode(true);
 
-imageElement.querySelector('.picture__img').src = user.url;
-imageElement.querySelector('.picture__likes').textContent = user.likes;
-imageElement.querySelector('.picture__comments').textContent = user.comments.length;
+  imageElement.querySelector('.picture__img').src = user.url;
+  imageElement.querySelector('.picture__likes').textContent = user.likes;
+  imageElement.querySelector('.picture__comments').textContent = user.comments.length;
 
   return imageElement
 }
@@ -81,3 +81,67 @@ var showPhotos = function () {
 }
 
 showPhotos();
+
+
+// part 2
+
+var bodyDoc = document.querySelector('body');
+var bigPicture = document.querySelector('.big-picture');
+var commentCount = bigPicture.querySelector('.social__comment-count');
+var loaderBtn = bigPicture.querySelector('.comments-loader');
+var bigPreview = bigPicture.querySelector('.big-picture__preview');
+var socialComments = bigPreview.querySelector('.social__comments');
+
+var addVisible = function (className) {
+  className.classList.remove('hidden');
+}
+var removeVisible = function (className) {
+  className.classList.add('hidden');
+}
+var addClassName = function (className, assign) {
+  className.classList.add(assign);
+}
+
+addVisible(bigPicture);
+addClassName(bodyDoc, 'modal-open');
+removeVisible(loaderBtn);
+removeVisible(commentCount);
+
+
+
+
+// Создать елемент комментарий разметку для большой фото
+var generateFullScreenComment = function () {
+  var container = document.createElement('li');
+  container.classList.add('social__comment');
+
+  var commentImg = document.createElement('img');
+  commentImg.classList.add('social__picture');
+  commentImg.style.width = '35px';
+  commentImg.style.height = '35px';
+  commentImg.src = 'img/avatar-' + getRandomNumber(minNumAvatar, maxNumAvatar) + '.svg';
+  commentImg.alt = usersData()[0].comments[0].name;
+
+  var text = document.createElement('p');
+  text.classList.add('social__text');
+  text.textContent = getRandomElementArray(sampleMessage);
+
+  container.appendChild(commentImg);
+  container.appendChild(text);
+
+  return container
+}
+
+// Собрать весь элемент большого фото+комментарии
+var renderFullScreenPhoto = function (userData) {
+  bigPreview.querySelector('.big-picture__img img').src = userData.url;
+  bigPreview.querySelector('.likes-count').textContent = userData.likes;
+  bigPreview.querySelector('.comments-count').textContent = userData.comments.length;
+
+  for (let i = 0; i < maxComents; i++) {
+    socialComments.appendChild(generateFullScreenComment());
+  }
+  bigPreview.querySelector('.social__caption').textContent = userData.description;
+}
+
+renderFullScreenPhoto(usersData()[0]);
