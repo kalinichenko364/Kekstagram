@@ -101,13 +101,36 @@ var removeVisible = function (className) {
 var addClassName = function (className, assign) {
   className.classList.add(assign);
 }
+var removeClassName = function (className, assign) {
+  className.classList.remove(assign);
+}
 
-addVisible(bigPicture);
-addClassName(bodyDoc, 'modal-open');
+
 removeVisible(loaderBtn);
 removeVisible(commentCount);
 
+// Открытие большой картинки при клике на маленькую картинку
+var pictures = document.querySelectorAll('.picture');
+for (let i = 0; i < pictures.length; i++) {
+  pictures[i].addEventListener('click', function () {
+    addVisible(bigPicture);
+    addClassName(bodyDoc, 'modal-open');
 
+    document.addEventListener('keydown', function (evt) {
+      if (evt.key === 'Escape') {
+        removeVisible(bigPicture);
+        removeClassName(bodyDoc, 'modal-open');
+      }
+    })
+  })
+}
+
+// Закрыть большую картинку клик по кнопке
+var cancelBigPictures = bigPicture.querySelector('.cancel');
+cancelBigPictures.addEventListener('click', function () {
+  removeVisible(bigPicture);
+  removeClassName(bodyDoc, 'modal-open');
+});
 
 
 // Создать елемент комментарий разметку для большой фото
@@ -145,3 +168,50 @@ var renderFullScreenPhoto = function (userData) {
 }
 
 renderFullScreenPhoto(usersData()[0]);
+
+
+// 4.2..9. Личный проект: доверяй, но проверяй (часть 1)
+
+var MAX_HASHTAGS = 5;
+var MAX_HASHTAGS_LENGTH = 20;
+
+var uploadFile = document.querySelector('.img-upload__input');
+var uploadOverlay = document.querySelector('.img-upload__overlay');
+var imgUploadCancel = document.querySelector('.img-upload__cancel');
+var effectsRadio = document.querySelectorAll('.effects__radio');
+var imgUploadPreview = document.querySelector('.img-upload__preview img');
+var effectLevelPin = document.querySelector('.effect-level__pin');
+var effectValue = document.querySelector('.effect-level__value');
+var textHashtags = document.querySelector('.text__hashtags');
+var effectIntensity = document.querySelector('.effect-level__depth');
+
+
+textHashtags.addEventListener('input', function () {
+  var hashTags = textHashtags.value.split(' ');
+  for (let i = 0; i < hashTags.length; i++) {
+    if (hashTags[i] === '#') {
+      textHashtags.setCustomValidity('удалось');
+    }
+  }
+});
+
+var changeEffectRadio = function (evt) {
+  imgUploadPreview.className = '';
+  var currentFilter = evt.target.value !== 'none' ? 'effects__preview--' + evt.target.value : null;
+  imgUploadPreview.classList.add(currentFilter);
+  effectLevelPin.style.left = '100%';
+  effectIntensity.style.width = '100%';
+  imgUploadPreview.style.filter = '';
+  effectValue.value = 100;
+}
+
+// События на эффекты
+effectsRadio.forEach(function (elem) {
+  elem.addEventListener('change', changeEffectRadio);
+});
+
+imgUploadCancel.addEventListener('click', function () {
+  uploadOverlay.classList('hidden');
+});
+
+
