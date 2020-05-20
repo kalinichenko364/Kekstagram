@@ -1,5 +1,7 @@
 'use strict';
 
+var ESC_KEY = 'Escape';
+
 var sampleMessage =
 [
   'Всё отлично!', 'В целом всё неплохо. Но не всё', 'Когда вы делаете фотографию, хорошо бы убирать палец из кадра. В конце концов это просто непрофессионально.', 'Моя бабушка случайно чихнула с фотоаппаратом в руках и у неё получилась фотография лучше.', 'Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.', 'Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.', 'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!'
@@ -94,6 +96,7 @@ var socialComments = bigPreview.querySelector('.social__comments');
 
 var addVisible = function (className) {
   className.classList.remove('hidden');
+  className.classList.remove('visually-hidden');
 }
 var removeVisible = function (className) {
   className.classList.add('hidden');
@@ -179,23 +182,71 @@ var uploadFile = document.querySelector('.img-upload__input');
 var uploadOverlay = document.querySelector('.img-upload__overlay');
 var imgUploadCancel = document.querySelector('.img-upload__cancel');
 var effectsRadio = document.querySelectorAll('.effects__radio');
-var imgUploadPreview = document.querySelector('.img-upload__preview img');
+var imgUploadPreview = document.querySelector('.img-upload__preview');
 var effectLevelPin = document.querySelector('.effect-level__pin');
 var effectValue = document.querySelector('.effect-level__value');
+var effectSlider = document.querySelector('.img-upload__effect-level');
 var textHashtags = document.querySelector('.text__hashtags');
 var effectIntensity = document.querySelector('.effect-level__depth');
+var scaleSmoller = document.querySelector('.scale__control--smaller');
+var scaleBigger = document.querySelector('.scale__control--bigger');
+var scaleValue = document.querySelector('.scale__control--value');
 
+addVisible(uploadFile);
 
-textHashtags.addEventListener('input', function () {
-  var hashTags = textHashtags.value.split(' ');
-  for (let i = 0; i < hashTags.length; i++) {
-    if (hashTags[i] === '#') {
-      textHashtags.setCustomValidity('удалось');
-    }
-  }
+uploadFile.addEventListener('click', function (evt) {
+  evt.preventDefault();
+  addVisible(uploadOverlay);
 });
 
+textHashtags.addEventListener('input', function () {
+  var inputText = textHashtags.value.toLowerCase().trim();
+  if (!inputText) {
+    return;
+  }
+
+  textHashtags.setCastomValidity('');
+  var inputArray = inputText.split(/\s+/);
+
+  var isStartNoHashTag = inputArray.some(function (item) {
+    return item[0] !== '#';
+  });
+  if (isStartNoHashTag) {
+    textHashtags.setCastomValidity('хэш-тег должен начинаться с символа #');
+  }
+
+  var isSplitSpaceHashtag = inputArray.some(function (item) {
+    return item.indexOf('#', 0) >= 1;
+  });
+  if (isSplitSpaceHashtag) {
+    textHashtags.setCastomValidity('хэш-теги разделяются пробелами');
+  }
+
+  var isRepeatHashTag = inputArray.some(function (item, i, array) {
+    return array.indexOf(item, i + 1) >= i + 1;
+  });
+  if (isRepeatHashTag) {
+    textHashtags.setCastomValidity('один и тот же хэш-тег не может быть использован дважды');
+  }
+
+  var isLongHashTag = inputArray.some(function (item) {
+    return item.length > MAX_HASHTAGS_LENGTH;
+  });
+  if (isLongHashTag) {
+    textHashtags.setCastomValidity('максимальная длина одного хэш-тэга 20 символов, включая решетку');
+  }
+  if (inputArray.length > MAX_HASHTAGS) {
+    textHashtags.setCastomValidity('нельзя указать больше 5-и хэш-тегов');
+  }
+
+});
+
+
+// Окно Эффекты
 var changeEffectRadio = function (evt) {
+  if (imgUploadPreview.className === 'effects__preview--none') {
+    effectSlider.classList.add('hidden');
+  }
   imgUploadPreview.className = '';
   var currentFilter = evt.target.value !== 'none' ? 'effects__preview--' + evt.target.value : null;
   imgUploadPreview.classList.add(currentFilter);
@@ -205,13 +256,44 @@ var changeEffectRadio = function (evt) {
   effectValue.value = 100;
 }
 
-// События на эффекты
+// События на эффекты Клики по маленьким картинкам
 effectsRadio.forEach(function (elem) {
   elem.addEventListener('change', changeEffectRadio);
 });
 
+// Кнопки '+' '-'
+var Zoom = {
+  MIN: 25,
+  MAX: 100,
+  STEP: 25
+};
+
+var changeZoom = function (sign) {
+  var zoom = parseInt(scaleValue.value, 10);
+  zoom = zoom + sign * Zoom.STEP;
+
+  if (zoom > Zoom.MAX) {
+    zoom = Zoom.MAX;
+  }
+  if (zoom < Zoom.MIN) {
+    zoom = Zoom.MIN;
+  }
+
+  imgUploadPreview.style.transform = 'scale(' + (zoom / 100) + ')';
+  scaleValue.value = zoom + '%';
+};
+
+var onScaleInc = function () {
+  changeZoom(1);
+}
+var onScaleDec = function () {
+  changeZoom(-1);
+}
+
+scaleSmoller.addEventListener('click', onScaleDec);
+scaleBigger.addEventListener('click', onScaleInc);
+
+// Закрыть Окно эффекты
 imgUploadCancel.addEventListener('click', function () {
-  uploadOverlay.classList('hidden');
+  removeVisible(uploadOverlay);
 });
-
-
