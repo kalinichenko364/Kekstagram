@@ -179,7 +179,7 @@ var MAX_HASHTAGS = 5;
 var MAX_HASHTAGS_LENGTH = 20;
 
 var uploadFile = document.querySelector('.img-upload__input');
-var uploadOverlay = document.querySelector('.img-upload__overlay');
+var imgUploadOverlay = document.querySelector('.img-upload__overlay');
 var imgUploadCancel = document.querySelector('.img-upload__cancel');
 var effectsRadio = document.querySelectorAll('.effects__radio');
 var imgUploadPreview = document.querySelector('.img-upload__preview');
@@ -191,12 +191,13 @@ var effectIntensity = document.querySelector('.effect-level__depth');
 var scaleSmoller = document.querySelector('.scale__control--smaller');
 var scaleBigger = document.querySelector('.scale__control--bigger');
 var scaleValue = document.querySelector('.scale__control--value');
+var effectLevel = imgUploadPreview.querySelector('.effect-level');
 
 addVisible(uploadFile);
 
 uploadFile.addEventListener('click', function (evt) {
   evt.preventDefault();
-  addVisible(uploadOverlay);
+  addVisible(imgUploadOverlay);
 });
 
 textHashtags.addEventListener('input', function () {
@@ -244,11 +245,12 @@ textHashtags.addEventListener('input', function () {
 
 // Окно Эффекты
 var changeEffectRadio = function (evt) {
-  if (imgUploadPreview.className === 'effects__preview--none') {
-    effectSlider.classList.add('hidden');
-  }
   imgUploadPreview.className = '';
   var currentFilter = evt.target.value !== 'none' ? 'effects__preview--' + evt.target.value : null;
+  if (currentFilter === null) {
+    effectLevel.classList.add('hidden');
+  }
+
   imgUploadPreview.classList.add(currentFilter);
   effectLevelPin.style.left = '100%';
   effectIntensity.style.width = '100%';
@@ -295,5 +297,16 @@ scaleBigger.addEventListener('click', onScaleInc);
 
 // Закрыть Окно эффекты
 imgUploadCancel.addEventListener('click', function () {
-  removeVisible(uploadOverlay);
+  removeVisible(imgUploadOverlay);
+});
+
+// Валидация описания
+var textDescription = document.querySelector('.text__description');
+
+textDescription.addEventListener('invalid', function () {
+  if (textDescription.validity.tooLong) {
+    textDescription.setCustomValidity('Максимальная длина комментария');
+  } else {
+    textDescription.setCustomValidity('');
+  }
 });
